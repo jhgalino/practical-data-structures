@@ -1,5 +1,4 @@
 var fs = require('fs');
-
 let data = JSON.parse(fs.readFileSync("data/users.json"));
 
 function dedup(data) {
