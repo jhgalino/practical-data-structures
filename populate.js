@@ -23,13 +23,21 @@ function populate(data) {
         return filtered;
     }
     
-    
+    // deduplicate data so there won't be confusion in regards to which user has which id
     const filtered_data = dedup(data);
     const hash = new Map();
+
+    // We use a hash map here to store the indexes of each of the users in the
+    // array. This is useful because we won't have to iterate through the entire
+    // array of users every time we want to replace a friend ID 
     filtered_data.map((v, i) => hash.set(v.id, i));
+
 
     filtered_data.map((v, _) => {
         v.friends.map((friend, index) => {
+            // for each id in the friends field, remove the id using splice
+            // and replace it with the actual user object. using splice is safe 
+            // here because the length does not change as items are only replaced
             v.friends.splice(index, 1, filtered_data[hash.get(friend)]);
         })
     });
