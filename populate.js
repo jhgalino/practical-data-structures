@@ -3,51 +3,33 @@ let data = JSON.parse(fs.readFileSync("data/users.json"));
 
 function populate(data) {
 
-    // normally, dedup would be imported here but default js does not allow imports
-    function dedup(data) {
+    const idMap = new Map();
 
-        const idStore = new Set();
-        const filtered = new Array();
-    
-        /* We need to use a stack for this because using splice changes the length of
-        the array. Changing the length of the array also changes the indexes of the
-        elements, thus making splice delete the wrong item. As such, we use an Array
-        as a stack. */
-        data.forEach(v => {
-            if (!idStore.has(v.id)) {
-                idStore.add(v.id);
-                filtered.push(v);
-            }
-        });
-    
-        return filtered;
-    }
-    
-    // deduplicate data so there won't be confusion in regards to which user has which id
-    const filtered_data = dedup(data);
-    const hash = new Map();
+    // time: O(n)
+    // space: O(n)
+    data.forEach(v => {
+        if (!idMap.has(v.id)) {
+            idMap.set(v.id, v);
+        }
+    });
 
-    // We use a hash map here to store the indexes of each of the users in the
-    // array. This is useful because we won't have to iterate through the entire
-    // array of users every time we want to replace a friend ID 
-    filtered_data.forEach((user, index) => hash.set(user.id, index));
+    // deduplicate array
+    data = Array.from(idMap.values())
 
-
-    filtered_data.forEach(v => {
+    // time: O(n^2)
+    // space: O(n)
+    data.forEach(v => {
         v.friends.forEach((friend, index) => {
             // for each id in the friends field, remove the id using splice
             // and replace it with the actual user object. using splice is safe 
             // here because the length does not change as items are only replaced
-            const f = filtered_data[hash.get(friend)];
+            const f = idMap.get(friend);
             v.friends.splice(index, 1, f);
         })
     });
 
-    return filtered_data;
+    return data;
 }
 
 const x = populate(data);
-// console.log(x)
 x.forEach(item => console.log(item.friends))
-
-// console.log(JSON.stringify(populate(data)));
